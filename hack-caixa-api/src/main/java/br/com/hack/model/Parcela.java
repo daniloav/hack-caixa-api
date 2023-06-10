@@ -6,15 +6,8 @@ public class Parcela {
 	private double valorAmortizacao;
 	private double valorJuros;
 	private double valorPrestacao;
-	private String tipo;
+
 	
-	
-	public String getTipo() {
-		return tipo;
-	}
-	public void setTipo(String tipo) {
-		this.tipo = tipo;
-	}
 	public int getNumero() {
 		return numero;
 	}

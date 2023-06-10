@@ -1,46 +1,33 @@
 package br.com.hack.model;
 
+import java.util.List;
+
 public class Parcelas {
 	
-	private Double valorAmortizacao;
-	private Double valorJuros;
-	private Double valorPrestacao;
+	private String tipo;
+	private List<Parcela> parcelas;
 	
 	
 	
-	public Parcelas(Double valorAmortizacao, Double valorJuros, Double valorPrestacao, int numero) {
-		super();
-		this.valorAmortizacao = valorAmortizacao;
-		this.valorJuros = valorJuros;
-		this.valorPrestacao = valorPrestacao;
-		this.numero = numero;
+	
+	public Parcelas(String tipo, List<Parcela> parcelas) {
+
+		this.parcelas = parcelas;
+		setTipo(tipo);
 	}
 	
-	private int numero;
-	public int getNumero() {
-		return numero;
+	public List<Parcela> getParcelas() {
+		return parcelas;
 	}
-	public void setNumero(int numero) {
-		this.numero = numero;
+	public void setParcelas(List<Parcela> parcelas) {
+		this.parcelas = parcelas;
 	}
-	public Double getValorAmortizacao() {
-		return valorAmortizacao;
+	public String getTipo() {
+		return tipo;
 	}
-	public void setValorAmortizacao(Double valorAmortizacao) {
-		this.valorAmortizacao = valorAmortizacao;
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
 	}
-	public Double getValorJuros() {
-		return valorJuros;
-	}
-	public void setValorJuros(Double valorJuros) {
-		this.valorJuros = valorJuros;
-	}
-	public Double getValorPrestacao() {
-		return valorPrestacao;
-	}
-	public void setValorPrestacao(Double valorPrestacao) {
-		this.valorPrestacao = valorPrestacao;
-	}
-	
+
 
 }
