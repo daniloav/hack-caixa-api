@@ -1,26 +1,19 @@
 package br.com.hack.model;
 
-
 public class Produto {
-
 
 	private int codigoProduto;
 
-	
 	private String nomeProduto;
 
 	private double taxaJuros;
 
-
 	private int numeroMinimoParcelas;
-
 
 	private int numeroMaximoParcelas;
 
-
 	private double valorMinimo;
 
-	
 	private double valorMaximo;
 
 	public int getCodigoProduto() {

@@ -1,4 +1,4 @@
-package br.com.hack.controllers;
+package br.com.hack.services;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +14,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import br.com.hack.dao.ProdutoDAO;
+import br.com.hack.dao.model.ProdutoDAO;
 import br.com.hack.model.Produto;
+import br.com.hack.model.SimulacaoEmprestimoRequest;
 import br.com.hack.model.SimulacaoEmprestimoResponse;
 
 @Service
@@ -23,16 +24,25 @@ public class SimulacaoEmprestimoService {
 
 	ProdutoDAO bd = new ProdutoDAO();
 
-	public SimulacaoEmprestimoResponse simularEmprestimo(SolicitacaoSimulacaoEmprestimo solicitacao) {
+	public SimulacaoEmprestimoResponse simularEmprestimo(SimulacaoEmprestimoRequest solicitacao) {
 
 		double valorSolicitado = solicitacao.getValorSolicitado();
 		int quantidadeParcelas = solicitacao.getQuantidadeParcelas();
 
-		List<Produto> produto = bd.leTodos();
+		List<Produto> produto = bd.getInstance().leTodos();
+
+	
 
 		for (int i = 0; i < produto.size(); i++) {
 
-			if (produto.get(i).isParametrosValidos(valorSolicitado, quantidadeParcelas)) {
+			// if (produto.get(i).isParametrosValidos(valorSolicitado, quantidadeParcelas))
+			// {
+			if (quantidadeParcelas >= produto.get(i).getNumeroMinimoParcelas()
+					&& quantidadeParcelas <= produto.get(i).getNumeroMaximoParcelas()
+					|| produto.get(i).getNumeroMaximoParcelas() == 0
+					&& valorSolicitado >= produto.get(i).getValorMinimo()
+					&& valorSolicitado <= produto.get(i).getValorMaximo()
+					|| produto.get(i).getValorMaximo() == 0 ) {
 
 				SimulacaoEmprestimoResponse response = new SimulacaoEmprestimoResponse();
 
@@ -40,88 +50,87 @@ public class SimulacaoEmprestimoService {
 				response.setDescricaoProduto(produto.get(i).getNomeProduto());
 				response.setTaxaJuros(produto.get(i).getTaxaJuros());
 				response.setResultadoSimulacao(null);
-				
+
 				List<SimulacaoEmprestimoResponse.ResultadoSimulacao> resultadoSimulacao = new ArrayList<>();
-				
-		       
-				resultadoSimulacao.add(calcularAmortizacaoSAC(valorSolicitado, quantidadeParcelas, response.getTaxaJuros()));
-		     
-		        resultadoSimulacao.add(calcularAmortizacaoPRICE(valorSolicitado, quantidadeParcelas, response.getTaxaJuros()));
-		        
-				
-		        response.setResultadoSimulacao(resultadoSimulacao);
-		       
 
-				gravarEventoSimulacao(response); // Grava o evento no Eventhub
-				
-				 Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			        String json = gson.toJson(response);
-			        
-			        SimulacaoEmprestimoResponse responsef = gson.fromJson(json, SimulacaoEmprestimoResponse.class);
+				resultadoSimulacao
+						.add(calcularAmortizacaoSAC(valorSolicitado, quantidadeParcelas, response.getTaxaJuros()));
 
-			        return responsef;
+				resultadoSimulacao
+						.add(calcularAmortizacaoPRICE(valorSolicitado, quantidadeParcelas, response.getTaxaJuros()));
 
-				//return response;
+				response.setResultadoSimulacao(resultadoSimulacao);
+
+				gravarEventoSimulacao(response);
+
+				Gson gson = new GsonBuilder().setPrettyPrinting().create();
+				String json = gson.toJson(response);
+
+				SimulacaoEmprestimoResponse responsef = gson.fromJson(json, SimulacaoEmprestimoResponse.class);
+
+				return responsef;
+
+				// return response;
 			}
 
 		}
 
-		return null; // Retorna null se a simulação falhou ou os dados são inválidos
+		return null;
 	}
 
-	private SimulacaoEmprestimoResponse.ResultadoSimulacao calcularAmortizacaoSAC(double valorSolicitado, int quantidadeParcelas, double taxaJuros) {
-		
+	private SimulacaoEmprestimoResponse.ResultadoSimulacao calcularAmortizacaoSAC(double valorSolicitado,
+			int quantidadeParcelas, double taxaJuros) {
+
 		SimulacaoEmprestimoResponse.ResultadoSimulacao sac = new SimulacaoEmprestimoResponse.ResultadoSimulacao();
-        sac.setTipo("SAC");
+		sac.setTipo("SAC");
 
 		double valorAmortizacao = valorSolicitado / quantidadeParcelas;
 		double saldoDevedor = valorSolicitado;
-		
+
 		List<SimulacaoEmprestimoResponse.Parcela> parcelas = new ArrayList<>();
 
 		for (int i = 1; i <= quantidadeParcelas; i++) {
 			double valorJuros = saldoDevedor * taxaJuros;
 			double valorPrestacao = valorAmortizacao + valorJuros;
-			
-			SimulacaoEmprestimoResponse.Parcela parcela = new SimulacaoEmprestimoResponse.Parcela(i, valorAmortizacao, valorJuros, valorPrestacao);;
-			
+
+			SimulacaoEmprestimoResponse.Parcela parcela = new SimulacaoEmprestimoResponse.Parcela(i, valorAmortizacao,
+					valorJuros, valorPrestacao);
+			;
+
 			parcelas.add(parcela);
 
 			saldoDevedor -= valorAmortizacao;
-			
-			
-		}sac.setParcelas(parcelas);
-		
-		   for (SimulacaoEmprestimoResponse.Parcela parcela : sac.getParcelas()) {
-		        System.out.println(parcela.getNumero());
-		    }
-		
+
+		}
+		sac.setParcelas(parcelas);
+
 		return sac;
 	}
 
-	private SimulacaoEmprestimoResponse.ResultadoSimulacao calcularAmortizacaoPRICE(double valorSolicitado, int quantidadeParcelas, double taxaJuros) {
+	private SimulacaoEmprestimoResponse.ResultadoSimulacao calcularAmortizacaoPRICE(double valorSolicitado,
+			int quantidadeParcelas, double taxaJuros) {
 
 		SimulacaoEmprestimoResponse.ResultadoSimulacao price = new SimulacaoEmprestimoResponse.ResultadoSimulacao();
-        price.setTipo("PRICE");
+		price.setTipo("PRICE");
 
 		double valorParcela = calcularValorParcelaPrice(valorSolicitado, taxaJuros, quantidadeParcelas);
 		double saldoDevedor = valorSolicitado;
-		
+
 		List<SimulacaoEmprestimoResponse.Parcela> parcelas = new ArrayList<>();
 
 		for (int j = 1; j <= quantidadeParcelas; j++) {
 			double juros = saldoDevedor * taxaJuros;
 			double amortizacao = valorParcela - juros;
-			
-			SimulacaoEmprestimoResponse.Parcela parcela = new SimulacaoEmprestimoResponse.Parcela(j, amortizacao,juros,valorParcela);
-			
+
+			SimulacaoEmprestimoResponse.Parcela parcela = new SimulacaoEmprestimoResponse.Parcela(j, amortizacao, juros,
+					valorParcela);
+
 			parcelas.add(parcela);
-			
+
 			saldoDevedor -= amortizacao;
-			
-			
-		
-		}price.setParcelas(parcelas);
+
+		}
+		price.setParcelas(parcelas);
 
 		return price;
 	}

@@ -1,4 +1,4 @@
-package br.com.hack.dao;
+package br.com.hack.dao.model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import br.com.hack.dao.Conexao;
 import br.com.hack.model.Produto;
 
 public class ProdutoDAO {
@@ -31,6 +32,7 @@ public class ProdutoDAO {
 				stmt = conn.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
 				ResultSet rs = stmt.executeQuery("SELECT * FROM PRODUTO ORDER BY CO_PRODUTO asc");
 				while (rs.next()) {
+					
 					Produto produto = new Produto();
 					produto.setCodigoProduto(rs.getInt("CO_PRODUTO"));
 					produto.setNomeProduto(rs.getString("NO_PRODUTO"));
@@ -40,6 +42,7 @@ public class ProdutoDAO {
 					produto.setValorMinimo(rs.getDouble("VR_MINIMO"));
 					produto.setValorMaximo(rs.getDouble("VR_MAXIMO"));
 					lProduto.add(produto);
+					
 				}
 				conn.close();
 			} catch (SQLException e) {
@@ -58,7 +61,7 @@ public class ProdutoDAO {
 			}
 
 		}
-		
+
 		return lProduto;
 
 	}
