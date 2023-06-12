@@ -10,6 +10,7 @@ public class SimulacaoEmprestimoRequest {
 	}
 
 	public void setValorSolicitado(double valorSolicitado) {
+
 		this.valorSolicitado = valorSolicitado;
 	}
 

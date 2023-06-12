@@ -1,6 +1,7 @@
 package br.com.hack.services;
 
 import java.util.ArrayList;
+import java.text.DecimalFormat;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -31,18 +32,14 @@ public class SimulacaoEmprestimoService {
 
 		List<Produto> produto = bd.getInstance().leTodos();
 
-	
-
 		for (int i = 0; i < produto.size(); i++) {
 
-			// if (produto.get(i).isParametrosValidos(valorSolicitado, quantidadeParcelas))
-			// {
 			if (quantidadeParcelas >= produto.get(i).getNumeroMinimoParcelas()
 					&& quantidadeParcelas <= produto.get(i).getNumeroMaximoParcelas()
 					|| produto.get(i).getNumeroMaximoParcelas() == 0
-					&& valorSolicitado >= produto.get(i).getValorMinimo()
-					&& valorSolicitado <= produto.get(i).getValorMaximo()
-					|| produto.get(i).getValorMaximo() == 0 ) {
+							&& valorSolicitado >= produto.get(i).getValorMinimo()
+							&& valorSolicitado <= produto.get(i).getValorMaximo()
+					|| produto.get(i).getValorMaximo() == 0) {
 
 				SimulacaoEmprestimoResponse response = new SimulacaoEmprestimoResponse();
 
@@ -109,6 +106,8 @@ public class SimulacaoEmprestimoService {
 
 	private SimulacaoEmprestimoResponse.ResultadoSimulacao calcularAmortizacaoPRICE(double valorSolicitado,
 			int quantidadeParcelas, double taxaJuros) {
+		
+		
 
 		SimulacaoEmprestimoResponse.ResultadoSimulacao price = new SimulacaoEmprestimoResponse.ResultadoSimulacao();
 		price.setTipo("PRICE");
@@ -121,13 +120,17 @@ public class SimulacaoEmprestimoService {
 		for (int j = 1; j <= quantidadeParcelas; j++) {
 			double juros = saldoDevedor * taxaJuros;
 			double amortizacao = valorParcela - juros;
+			
+			
 
 			SimulacaoEmprestimoResponse.Parcela parcela = new SimulacaoEmprestimoResponse.Parcela(j, amortizacao, juros,
 					valorParcela);
 
 			parcelas.add(parcela);
-
+			
 			saldoDevedor -= amortizacao;
+
+			
 
 		}
 		price.setParcelas(parcelas);
@@ -136,9 +139,9 @@ public class SimulacaoEmprestimoService {
 	}
 
 	private double calcularValorParcelaPrice(double valorSolicitado, double taxaJuros, int quantidadeParcelas) {
-		double taxa = taxaJuros / 100;
-		double denominador = Math.pow(1 + taxa, quantidadeParcelas) - 1;
-		double valorParcela = (valorSolicitado * taxa * Math.pow(1 + taxa, quantidadeParcelas)) / denominador;
+		double taxa = taxaJuros	;
+		//double denominador = (taxa * Math.pow(1 + taxa, quantidadeParcelas)) / (Math.pow(1 + taxa, quantidadeParcelas) - 1);
+		double valorParcela = valorSolicitado * (taxa / (1 - Math.pow(1 + taxa, -quantidadeParcelas)));
 		return valorParcela;
 	}
 

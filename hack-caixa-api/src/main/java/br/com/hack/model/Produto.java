@@ -72,14 +72,6 @@ public class Produto {
 		this.valorMaximo = valorMaximo;
 	}
 
-	public boolean isParametrosValidos(double valorSolicitado, int quantidadeParcelas) {
-		if (valorSolicitado >= valorMinimo && valorSolicitado <= valorMaximo) {
-			if (quantidadeParcelas >= numeroMinimoParcelas
-					&& (quantidadeParcelas <= numeroMaximoParcelas || numeroMaximoParcelas == 0)) {
-				return true;
-			}
-		}
-		return false;
-	}
+
 
 }
