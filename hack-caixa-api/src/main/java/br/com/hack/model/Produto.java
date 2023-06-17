@@ -1,26 +1,21 @@
 package br.com.hack.model;
 
+//Danilo Sousa de Oliveira - C137050 / GIT: daniloav/hack-caixa-api
 
 public class Produto {
 
-
 	private int codigoProduto;
 
-	
 	private String nomeProduto;
 
 	private double taxaJuros;
 
-
 	private int numeroMinimoParcelas;
-
 
 	private int numeroMaximoParcelas;
 
-
 	private double valorMinimo;
 
-	
 	private double valorMaximo;
 
 	public int getCodigoProduto() {
@@ -79,14 +74,6 @@ public class Produto {
 		this.valorMaximo = valorMaximo;
 	}
 
-	public boolean isParametrosValidos(double valorSolicitado, int quantidadeParcelas) {
-		if (valorSolicitado >= valorMinimo && valorSolicitado <= valorMaximo) {
-			if (quantidadeParcelas >= numeroMinimoParcelas
-					&& (quantidadeParcelas <= numeroMaximoParcelas || numeroMaximoParcelas == 0)) {
-				return true;
-			}
-		}
-		return false;
-	}
+
 
 }
