@@ -1,6 +1,8 @@
 package br.com.hack.model;
 
-public class SimulacaoEmprestimoRequest {
+//Danilo Sousa de Oliveira - C137050 / GIT: daniloav/hack-caixa-api
+
+public class Request {
 
 	private double valorSolicitado;
 	private int quantidadeParcelas;

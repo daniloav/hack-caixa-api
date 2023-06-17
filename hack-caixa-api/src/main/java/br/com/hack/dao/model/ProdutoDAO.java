@@ -1,5 +1,7 @@
 package br.com.hack.dao.model;
 
+//Danilo Sousa de Oliveira - C137050 / GIT: daniloav/hack-caixa-api
+
 import java.util.ArrayList;
 import java.util.List;
 import java.sql.Connection;

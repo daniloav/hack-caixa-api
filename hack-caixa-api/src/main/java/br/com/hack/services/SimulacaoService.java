@@ -1,5 +1,7 @@
 package br.com.hack.services;
 
+//Danilo Sousa de Oliveira - C137050 / GIT: daniloav/hack-caixa-api
+
 import java.util.ArrayList;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -17,15 +19,15 @@ import com.google.gson.GsonBuilder;
 
 import br.com.hack.dao.model.ProdutoDAO;
 import br.com.hack.model.Produto;
-import br.com.hack.model.SimulacaoEmprestimoRequest;
-import br.com.hack.model.SimulacaoEmprestimoResponse;
+import br.com.hack.model.Request;
+import br.com.hack.model.Response;
 
 @Service
-public class SimulacaoEmprestimoService {
+public class SimulacaoService {
 
 	ProdutoDAO bd = new ProdutoDAO();
 
-	public SimulacaoEmprestimoResponse simularEmprestimo(SimulacaoEmprestimoRequest solicitacao) {
+	public Response simularEmprestimo(Request solicitacao) {
 
 		double valorSolicitado = solicitacao.getValorSolicitado();
 		int quantidadeParcelas = solicitacao.getQuantidadeParcelas();
@@ -41,14 +43,14 @@ public class SimulacaoEmprestimoService {
 							&& valorSolicitado <= produto.get(i).getValorMaximo()
 					|| produto.get(i).getValorMaximo() == 0) {
 
-				SimulacaoEmprestimoResponse response = new SimulacaoEmprestimoResponse();
+				Response response = new Response();
 
 				response.setCodigoProduto(produto.get(i).getCodigoProduto());
 				response.setDescricaoProduto(produto.get(i).getNomeProduto());
 				response.setTaxaJuros(produto.get(i).getTaxaJuros());
 				response.setResultadoSimulacao(null);
 
-				List<SimulacaoEmprestimoResponse.ResultadoSimulacao> resultadoSimulacao = new ArrayList<>();
+				List<Response.ResultadoSimulacao> resultadoSimulacao = new ArrayList<>();
 
 				resultadoSimulacao
 						.add(calcularAmortizacaoSAC(valorSolicitado, quantidadeParcelas, response.getTaxaJuros()));
@@ -63,7 +65,7 @@ public class SimulacaoEmprestimoService {
 				Gson gson = new GsonBuilder().setPrettyPrinting().create();
 				String json = gson.toJson(response);
 
-				SimulacaoEmprestimoResponse responsef = gson.fromJson(json, SimulacaoEmprestimoResponse.class);
+				Response responsef = gson.fromJson(json, Response.class);
 
 				return responsef;
 
@@ -75,23 +77,22 @@ public class SimulacaoEmprestimoService {
 		return null;
 	}
 
-	private SimulacaoEmprestimoResponse.ResultadoSimulacao calcularAmortizacaoSAC(double valorSolicitado,
-			int quantidadeParcelas, double taxaJuros) {
+	private Response.ResultadoSimulacao calcularAmortizacaoSAC(double valorSolicitado, int quantidadeParcelas,
+			double taxaJuros) {
 
-		SimulacaoEmprestimoResponse.ResultadoSimulacao sac = new SimulacaoEmprestimoResponse.ResultadoSimulacao();
+		Response.ResultadoSimulacao sac = new Response.ResultadoSimulacao();
 		sac.setTipo("SAC");
 
 		double valorAmortizacao = valorSolicitado / quantidadeParcelas;
 		double saldoDevedor = valorSolicitado;
 
-		List<SimulacaoEmprestimoResponse.Parcela> parcelas = new ArrayList<>();
+		List<Response.Parcela> parcelas = new ArrayList<>();
 
 		for (int i = 1; i <= quantidadeParcelas; i++) {
 			double valorJuros = saldoDevedor * taxaJuros;
 			double valorPrestacao = valorAmortizacao + valorJuros;
 
-			SimulacaoEmprestimoResponse.Parcela parcela = new SimulacaoEmprestimoResponse.Parcela(i, valorAmortizacao,
-					valorJuros, valorPrestacao);
+			Response.Parcela parcela = new Response.Parcela(i, valorAmortizacao, valorJuros, valorPrestacao);
 			;
 
 			parcelas.add(parcela);
@@ -104,33 +105,26 @@ public class SimulacaoEmprestimoService {
 		return sac;
 	}
 
-	private SimulacaoEmprestimoResponse.ResultadoSimulacao calcularAmortizacaoPRICE(double valorSolicitado,
-			int quantidadeParcelas, double taxaJuros) {
-		
-		
+	private Response.ResultadoSimulacao calcularAmortizacaoPRICE(double valorSolicitado, int quantidadeParcelas,
+			double taxaJuros) {
 
-		SimulacaoEmprestimoResponse.ResultadoSimulacao price = new SimulacaoEmprestimoResponse.ResultadoSimulacao();
+		Response.ResultadoSimulacao price = new Response.ResultadoSimulacao();
 		price.setTipo("PRICE");
 
 		double valorParcela = calcularValorParcelaPrice(valorSolicitado, taxaJuros, quantidadeParcelas);
 		double saldoDevedor = valorSolicitado;
 
-		List<SimulacaoEmprestimoResponse.Parcela> parcelas = new ArrayList<>();
+		List<Response.Parcela> parcelas = new ArrayList<>();
 
 		for (int j = 1; j <= quantidadeParcelas; j++) {
 			double juros = saldoDevedor * taxaJuros;
 			double amortizacao = valorParcela - juros;
-			
-			
 
-			SimulacaoEmprestimoResponse.Parcela parcela = new SimulacaoEmprestimoResponse.Parcela(j, amortizacao, juros,
-					valorParcela);
+			Response.Parcela parcela = new Response.Parcela(j, amortizacao, juros, valorParcela);
 
 			parcelas.add(parcela);
-			
-			saldoDevedor -= amortizacao;
 
-			
+			saldoDevedor -= amortizacao;
 
 		}
 		price.setParcelas(parcelas);
@@ -139,34 +133,33 @@ public class SimulacaoEmprestimoService {
 	}
 
 	private double calcularValorParcelaPrice(double valorSolicitado, double taxaJuros, int quantidadeParcelas) {
-		double taxa = taxaJuros	;
-		//double denominador = (taxa * Math.pow(1 + taxa, quantidadeParcelas)) / (Math.pow(1 + taxa, quantidadeParcelas) - 1);
+		double taxa = taxaJuros;
 		double valorParcela = valorSolicitado * (taxa / (1 - Math.pow(1 + taxa, -quantidadeParcelas)));
 		return valorParcela;
 	}
 
-	private void gravarEventoSimulacao(SimulacaoEmprestimoResponse response) {
+	private void gravarEventoSimulacao(Response response) {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 			String json = mapper.writeValueAsString(response);
 
-			// Configuração do cliente Event Hubs
+			
 			String connectionString = "Endpoint=sb://eventhack.servicebus.windows.net/;SharedAccessKeyName=hack;SharedAccessKey=HeHeVaVqyVkntO2FnjQcs2Ilh/4MUDo4y+AEhKp8z+g=;EntityPath=simulacoes";
 			String eventHubName = "simulacoes";
 
-			// Criação do cliente Event Hubs
+	
 			EventHubProducerClient producerClient = new EventHubClientBuilder()
 					.connectionString(connectionString, eventHubName).buildProducerClient();
 
-			// Criação do evento
+			
 			EventData eventData = new EventData(json.getBytes());
 			EventDataBatch eventDataBatch = producerClient.createBatch();
 			eventDataBatch.tryAdd(eventData);
 
-			// Envio do evento para o Event Hub
+			
 			producerClient.send(eventDataBatch);
 
-			// Fechamento do cliente Event Hubs
+	
 			producerClient.close();
 
 			System.out.println("Evento de simulação gravado com sucesso: " + json);

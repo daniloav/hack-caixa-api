@@ -1,8 +1,10 @@
 package br.com.hack.model;
 
+//Danilo Sousa de Oliveira - C137050 / GIT: daniloav/hack-caixa-api
+
 import java.util.List;
 
-public class SimulacaoEmprestimoResponse {
+public class Response {
 	private int codigoProduto;
 	private String descricaoProduto;
 	private double taxaJuros;

@@ -1,5 +1,7 @@
 package br.com.hack.dao;
 
+//Danilo Sousa de Oliveira - C137050 / GIT: daniloav/hack-caixa-api
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;

@@ -1,5 +1,7 @@
 package br.com.hack.model;
 
+//Danilo Sousa de Oliveira - C137050 / GIT: daniloav/hack-caixa-api
+
 public class Parcela {
 
 	private int numero;
